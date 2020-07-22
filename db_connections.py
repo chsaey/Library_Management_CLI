@@ -9,8 +9,8 @@ def open_connection():
         libDB = mysql.connector.connect(
             host="localhost",
             user="root",
-            passwd="Fall2019!",#change to what your root password is locally
-            database='library2'
+            passwd="",#change to what your root password is locally
+            database=''
         )
         print("connection opened")
         

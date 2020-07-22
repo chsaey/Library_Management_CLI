@@ -22,7 +22,6 @@ Or enter 0 to exit
         elif choice == '2':
             librarian_menu.LIB1()
         elif choice == '3':
-          #import here to avoid circular import, so we can go back and forth to main and admin menus
           admin_menu.admin_menu()
         elif choice == '0':
             valid = 1

@@ -8,7 +8,7 @@ def add_book():
         title = input('Insert Book Title or Enter to return to admin menu: ')
         if title == '':
           return
-        elif lookup_book(title) != 0:
+        elif lookup('find_book', [title, 0]) != 0:
             print('Book already exists!')
         else:
             print('Select a publisher: ')
@@ -18,13 +18,13 @@ def add_book():
             while valid == 0:         
                 choice = input()
                 if choice.lower() == '00':
-                    insert_book(title, add_publisher(1))
+                    proc('insert_book', [title, add_publisher(1)])
                     valid = 1
                 elif choice == '':
-                    insert_book(title, 0)
+                    proc('insert_book', [title, 0])
                     valid = 1
                 elif choice.isdecimal() and int(choice) in range (1, [len(pubs)+1][0]):
-                    insert_book(title, pubs[int(choice) - 1][0])
+                    proc('insert_book', [title, pubs[int(choice) - 1][0]])
                     valid = 1             
                 else:
                     print('Select a valid option')  
@@ -33,14 +33,14 @@ def add_book():
             print('Select an author: ')
             authors = display_authors()           
             print('00) To create new author\nEnter to skip')             
-            bookid = lookup_book(title)  
+            bookid = lookup('find_book', [title, 0])  
             valid = 0
             while valid == 0:         
                 choice = input()
                 if choice.lower() == '00':
                     res = add_author(1)
                     if res != 0:
-                        insert_book_author(bookid,res)    
+                        insert_book_author(bookid, res)                 
                     else:
                         print('Since no author was added, try again')                  
                 elif choice == '':
@@ -67,13 +67,13 @@ def delete_book():
         choice = input()
         if choice == '':
             return
-        elif int(choice) in range(1, len(books)+1):           
+        elif int(choice) in range(1, len(books)+1):          
     
-            if check_book_dependencies(int(choice)) > 0:
+            if lookup('check_book_dependencies', [int(choice), 0]) > 0:
                 print('Deleting this book will cause issues with dependancy in the data base. No action taken')  
             else:          
-                remove_book_author(books[int(choice)-1][0], -1)
-                remove_book(books[int(choice)-1][0])                
+                proc('delete_book_author', [books[int(choice)-1][0], -1])
+                proc('delete_book', [books[int(choice)-1][0],])                
                 print('Book has been deleted!')   
                 return                 
         else:
@@ -103,15 +103,15 @@ def update_book():
                     choice = input()
                     if choice == '00':
                         new_pub = add_publisher(1)
-                        edit_book(bookid,new_title,new_pub)
+                        proc('update_book', [bookid, new_title, new_pub])
                         pub_loop = 1
                         choose_book = 1                       
                     elif choice == '':                                       
-                        edit_book(int(bookid), new_title, 0)
+                        proc('update_book', [int(bookid), new_title, 0])
                         pub_loop = 1 
                         choose_book = 1
                     elif int(choice) in range (1, len(pubs)+1):
-                        edit_book(bookid,new_title,pubs[int(choice)-1][0]) 
+                        proc('update_book', [bookid, new_title, pubs[int(choice)-1][0]])
                         pub_loop = 1
                         choose_book = 1           
                     else:
@@ -138,7 +138,7 @@ Or press Enter to skip
                             if choice == '00':
                                 authorID = add_author(1)
                                 if authorID != 0:
-                                    insert_book_author(bookid,authorID)  
+                                    insert_book_author(bookid, authorID)  
                                     print('New author has been associated with this book!')                                  
                                 else:
                                     print('Since no author was added, try again')
@@ -161,8 +161,8 @@ Or press Enter to skip
                                     
                             elif int(choice) in range (1, len(book_auth)+1):
                                 author = book_auth[int(choice) - 1][0]
-                                remove_book_author(int(bookid),lookup_author(author))
-                                print('Author removed')
+                                proc('delete_book_author', [int(bookid), lookup('find_author', [author, 0])])
+                                print('Author deleted')
                                 remove_loop = 1
                     elif choice == '':
                         remove_loop = 1
@@ -180,14 +180,14 @@ def add_author(location):
         if author == '':
           return 0
         else:
-            verify = lookup_author(author)
+            verify = lookup('find_author', [author, 0])
             if verify != 0:
                 print('Author already exists!, enter a new one')
             else: 
-                insert_author(author)
+                proc('insert_author', [author,])
                 print('Author added!')
                 if location == 1:
-                    return lookup_author(author)
+                    return lookup('find_author', [author, 0])
             return
 def delete_author():
     valid = 0
@@ -198,9 +198,9 @@ def delete_author():
             return
         if int(choice.isdecimal() and choice) in range(1, len(authors)+1):
             authorid = authors[int(choice)-1][0] 
-            if check_author_dependencies(authorid) == 0: 
-                remove_author(authorid)  
-                print('Author removed!')
+            if lookup('check_author_dependencies', [authorid, 0]) == 0: 
+                proc('delete_author', [authorid,])  
+                print('Author deleted!')
                 return 
             else:
                 print('Deleting this author will cause dependency issues within the database as it is associated with an book. No action taken')
@@ -219,7 +219,7 @@ def update_author():
             authorid = authors[int(choice)-1][0]          
             new_name = input("Enter new name for the author: ")
             if new_name.strip() != '':
-                edit_author(authorid,new_name)  
+                proc('update_author', [authorid, new_name])  
                 print('Author updated!')  
                 return   
             else:
@@ -232,17 +232,17 @@ def add_publisher(location):
         if publisher.strip() == '':
             return 0
         else:
-            verify = lookup_publisher(publisher)
+            verify = lookup('find_publisher', [publisher, 0])
             if verify != 0:
                 print('publisher already exists!')
             else: 
                 valid = 1
                 address = input('Enter publisher address: ')
                 phone = input('Enter publisher phone number: ')
-                insert_publisher(publisher, address, phone)
+                proc('insert_publisher', [publisher, address, phone])
                 print('Publisher added!')
                 if location == 1:
-                    return lookup_publisher(publisher)
+                    return lookup('find_publisher', [publisher, 0])
                 
 
 def update_publisher():
@@ -257,7 +257,7 @@ def update_publisher():
             new_name = input('Enter new publisher name or Enter to skip: ')      
             new_address = input('Enter new publisher address or Enter to skip: ')
             new_phone = input('Enter new publisher phone or Enter to skip: ')
-            edit_publisher(pubs[int(choice)-1][0], new_name, new_address, new_phone)
+            proc('update_publisher', [pubs[int(choice)-1][0], new_name, new_address, new_phone])
           
             print('Publisher has been updated!')
         else:
@@ -274,10 +274,10 @@ def delete_publisher():
             return
         elif int(choice) in range(1, len(pubs)+1):
             pubid = pubs[int(choice)-1][0]
-            if check_publisher_dependencies(pubid) > 0:
+            if lookup('check_publisher_dependencies', [pubid, 0]) > 0:
                 print('Deleting this publisher will cause dependency issues with some books. No action taken at this time')
             else: 
-                remove_publisher(pubid)
+                proc('delete_publisher', [pubid,])
                 print('Publisher was successfully deleted!')               
         else:
             print('Please enter a valid entry')
@@ -288,11 +288,11 @@ def add_branch():
         name = input('Insert a new branch name (Or hit ENTER to return to previous): ')
         if name.strip() == '':
             return 0
-        elif lookup_branch(name) != 0:
+        elif lookup('find_branch', [name, 0]) != 0:
             print('This branch already exists!')
         else:
             address = input('Insert address: ')
-            insert_branch(name, address)
+            proc('insert_branch', [name, address])
             print('Branch has been added!')
             return
                   
@@ -307,7 +307,7 @@ def update_branch():
         if(branch.isdecimal() and int(branch) in range(1,len(x)+1)):
             name = input('Enter new name, or enter to skip: ')
             address = input('Enter new address, or enter to skip: ')            
-            edit_branch(x[int(branch)-1][0], name, address)
+            proc('update_branch', [(x[int(branch)-1][0], name, address)])
             return
         else:
             print('Enter valid choice')
@@ -321,10 +321,10 @@ def delete_branch():
         if branch == '':
             return 0        
         if(branch.isdecimal() and int(branch) in range(1,len(x)+1)):
-            if check_branch_dependencies(x[int(branch) -1][0]) > 0:
+            if lookup('check_branch_dependencies', [x[int(branch) -1][0], 0]) > 0:
                 print('Deleting this branch will cause dependancy issues within the database. No action taken at this time')
             else:
-                remove_branch(x[int(branch) -1][0])
+                proc('delete_branch', [x[int(branch) -1][0],])
                 print('Branch successfully deleted!')
                 return
         else:
@@ -369,7 +369,7 @@ def update_borrower():
             temp = input("Update Phone (leave blank if you do not want to change):\n")
             if temp !='':
                 phone = temp
-            edit_borrower(x[int(choice)-1][0], name, address, phone)
+            proc('update_borrower', [x[int(choice)-1][0], name, address, phone])
             print("Updated borrower")
             return
         else:
@@ -386,10 +386,10 @@ def delete_borrower():
         if choice == '':
             return 0        
         if(choice.isdecimal() and int(choice) in range(1,len(x)+1)):
-            if check_borrower_dependencies(x[int(choice)-1][0]) > 0:
+            if lookup('check_borrower_dependencies', [x[int(choice)-1][0], 0]) > 0:
                 print('This borrower has books loaned out, cannot delete at this time.')
             else:
-                remove_borrower(x[int(choice) -1][0])
+                proc('delete_borrower', [x[int(choice) -1][0],])
                 print('Borrower successfully deleted!')
                 return
         else:
@@ -422,7 +422,7 @@ def manage_due_date():
                         book =bb[int(choice)-1][0]
                         branch =bb[int(choice)-1][1]
                         cardNo=bb[int(choice)-1][2]               
-                        edit_due_date(book, branch, cardNo, new_date)
+                        proc('update_due_date', [book, branch, cardNo, new_date])
                         bookLoop=1
                         print('\nDue date has been pushed back {} day.\n'.format(new_date))
                     else:
